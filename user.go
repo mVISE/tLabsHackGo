@@ -17,8 +17,10 @@ func getUserAPI(w http.ResponseWriter, r *http.Request) {
 
 	user, err := getUser(mux.Vars(r)["user"])
 	if err != nil {
-		user.UserID = mux.Vars(r)["user"]
-		user.Score = 0
+		user = &User{
+			UserID: mux.Vars(r)["user"],
+			Score:  0,
+		}
 		db.Exec("insert into t_user (user_id, score) values (?, ?)", user.UserID, user.Score)
 	}
 	err = json.NewEncoder(w).Encode(user)
