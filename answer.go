@@ -2,7 +2,7 @@ package main
 
 import (
 	"crypto/sha256"
-	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -141,11 +141,12 @@ func postTransaction(item Item, user User, signature string) {
 	hasher := sha256.New()
 	hasher.Write(json)
 
-	hashString := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	hashString := hex.EncodeToString(hasher.Sum(nil))
+
 	// Post transaction to blockchain
 	req, err := http.NewRequest("POST", "https://developers.cryptowerk.com/platform/API/v6/register?version=6&hashes="+hashString, nil)
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("X-API-Key", os.Getenv("CRYPTOWORKAPI"))
+	req.Header.Set("X-API-Key", os.Getenv("CRYPTOWORKAPI")+" "+os.Getenv("CRYPTOWERKPW"))
 	client := &http.Client{}
 	if resp, err := client.Do(req); err != nil {
 		log.Println("Error when sending updating blockchain: ", err)
