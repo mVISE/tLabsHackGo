@@ -9,11 +9,13 @@ import (
 )
 
 type Item struct {
-	ItemID    string
-	Questions []Question
-	value     int
-	userID    string
-	locked    bool
+	ItemID      string
+	Questions   []Question
+	Description string
+	ImageRef    string
+	value       int
+	userID      string
+	locked      bool
 }
 
 type notFoundError struct {
@@ -79,7 +81,7 @@ func getItemAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func getItem(itemID string) (*Item, error) {
-	rows, err := db.Query("SELECT i.item_id, i.value, i.user_id, i.locked, q.question_id, q.question, q.answer FROM t_item i INNER JOIN t_questions q ON q.item_id = i.item_id WHERE i.item_id = ?", itemID)
+	rows, err := db.Query("SELECT i.item_id, i.value, i.user_id, i.locked, i.description, i.image_ref, q.question_id, q.question, q.answer FROM t_item i INNER JOIN t_questions q ON q.item_id = i.item_id WHERE i.item_id = ?", itemID)
 
 	if err != nil {
 		log.Println("Can't read item: ", err)
@@ -91,7 +93,7 @@ func getItem(itemID string) (*Item, error) {
 	ok := false
 	for rows.Next() {
 		ok = true
-		err = rows.Scan(&result.ItemID, &result.value, &result.userID, &result.locked, &cur.ID, &cur.Question, &cur.answer)
+		err = rows.Scan(&result.ItemID, &result.value, &result.userID, &result.locked, &result.Description, &result.ImageRef, &cur.ID, &cur.Question, &cur.answer)
 		if err != nil {
 			log.Println("Failed to read row: ", err)
 		}

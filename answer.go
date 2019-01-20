@@ -96,12 +96,14 @@ func postAnswer(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("User answered successfully, incrementing score")
 	user.Score += item.value
+	// save users new score
 	_, err = db.Exec("update t_user set score = ? where user_id = ?", user.Score, user.UserID)
 
 	if err != nil {
 		log.Println("Failed to update user's score: ", err)
 	}
 
+	// Unlock item
 	_, err = db.Exec("update t_item set locked = 0 where item_id = ?", item.ItemID)
 
 	if err != nil {
