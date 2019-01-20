@@ -4,8 +4,10 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -141,8 +143,18 @@ func postTransaction(item Item, user User, signature string) {
 
 	hashString := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 	// Post transaction to blockchain
-	_, err = http.Post("https://developers.cryptowerk.com/platform/API/v6/register?version=6&hashes="+hashString, "application/json", nil)
-	if err != nil {
-		log.Println("failed to post to blockchain")
+	req, err := http.NewRequest("POST", "https://developers.cryptowerk.com/platform/API/v6/register?version=6&hashes="+hashString, nil)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("X-API-Key", os.Getenv("CRYPTOWORKAPI"))
+	client := &http.Client{}
+	if resp, err := client.Do(req); err != nil {
+		log.Println("Error when sending updating blockchain: ", err)
+	} else if resp.StatusCode != 200 {
+		// Request sent but server responded something went wrong, try to read body
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println("Error when reading blockchain response body, message: ", err)
+		}
+		log.Printf("Blockchain responded with %d, reason: %s", resp.StatusCode, body)
 	}
 }
